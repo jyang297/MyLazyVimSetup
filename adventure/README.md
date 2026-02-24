@@ -27,11 +27,17 @@ nvim ~/.config/nvim/adventure/
 | 9 | `mission-9-go/` | Go | gopls analyses, goimports, nilness | 10 min |
 | 10 | `mission-10-watchmode/` | Python | TDD watch loop | 5 min |
 | 11 | `mission-11-markdown/` | Markdown | render-markdown.nvim, browser preview | 5 min |
+| 12 | `mission-12-quickfix/` | Python | Quickfix list + nvim-bqf filtering | 10 min |
+| 13 | `mission-13-refactor/` | Python | LSP rename across multiple files | 10 min |
+| 14 | `mission-14-go-testing/` | Go | neotest-go, table-driven tests | 10 min |
+| 15 | `mission-15-ts-debug/` | TypeScript | DAP debugging a Node.js pipeline | 10 min |
+| 16 | `mission-16-macros/` | Python | Vim macros for bulk transformations | 10 min |
 
 > **Tips:**
 > - Each practice file has a **CHECKLIST** at the top — tick off every item before moving on
 > - Files contain **intentional bugs** — use the tools to find them, don't just read the code
 > - Missions 4 → 5 → 6 are best done in order (breakpoints → log points → conditional)
+> - Missions 12 → 13 are good follow-ups to Mission 1 (deeper LSP + search workflow)
 
 ---
 
@@ -332,6 +338,187 @@ Practice right here — make real changes and commit them.
 
 ---
 
+## Mission 12: Quickfix List & nvim-bqf (10 minutes)
+
+**Goal:** Search across files, navigate results in the quickfix list, filter with nvim-bqf.
+
+**Practice files:** `mission-12-quickfix/src/` — a mini codebase using a deprecated `fetch_record()` API. Replace every call with `fetch_item()`.
+
+1. **Open the directory:**
+   ```bash
+   nvim ~/.config/nvim/adventure/mission-12-quickfix/src/loader.py
+   ```
+
+2. **Search for the deprecated call across all files:**
+   - Press `<leader>sg` (live grep) → type `fetch_record` → press `Enter`
+   - All matches load into the quickfix list
+
+3. **Open the quickfix list with nvim-bqf:**
+   - Press `<leader>xq` or `:copen` — see all results with syntax highlighting
+   - In the quickfix window: press `zf` to **fuzzy filter** (type `reporter` to narrow to one file)
+   - Press `Enter` to jump to a match
+
+4. **Navigate the list:**
+   - `]q` → next quickfix item (while editing)
+   - `[q` → previous item
+   - `<C-t>` in quickfix → preview in float without leaving the list
+
+5. **Fix each occurrence:** replace `fetch_record` → `fetch_item` (same signature)
+
+6. **Verify:** run the grep again — zero results means you got them all
+
+**✅ Done when:** `fetch_record` has zero hits in the grep search.
+
+---
+
+## Mission 13: Multi-file Refactoring with LSP (10 minutes)
+
+**Goal:** Rename a symbol that spans 3 files using LSP rename — one keypress, all files updated.
+
+**Practice files:** `mission-13-refactor/` — `DataRecord` class used across `models.py`, `processor.py`, `api.py`.
+
+1. **Open the models file:**
+   ```bash
+   nvim ~/.config/nvim/adventure/mission-13-refactor/models.py
+   ```
+
+2. **Find all usages first:**
+   - Move cursor to `DataRecord` on the class definition line
+   - Press `gr` (find references) → see all 3 files in the quickfix list
+
+3. **Rename across all files at once:**
+   - Cursor still on `DataRecord` → press `<leader>cr` (LSP rename)
+   - Type `DataEntry` → press `Enter`
+   - All occurrences in all open and closed files update instantly
+
+4. **Verify the rename:**
+   - Press `<leader>sg` → search for `DataRecord` → should be zero results
+   - Open `processor.py` and `api.py` to confirm they were updated
+
+5. **Try a code action:**
+   - In `models.py`, move cursor to `make_record` function
+   - Press `<leader>ca` — see available actions (extract, inline, add docstring, etc.)
+
+6. **Find all implementations of an interface (bonus):**
+   - Cursor on `is_valid` method → press `gri` (go to implementation)
+
+**✅ Done when:** `DataRecord` is fully renamed and zero grep results remain.
+
+---
+
+## Mission 14: Go Testing with neotest (10 minutes)
+
+**Goal:** Run table-driven Go tests with neotest, find which functions are broken, fix them.
+
+**Practice file:** `mission-14-go-testing/math.go` — 4 bugs hidden in math functions.
+
+1. **Open the test file:**
+   ```bash
+   nvim ~/.config/nvim/adventure/mission-14-go-testing/math_test.go
+   ```
+
+2. **Run all tests:** `<leader>tf` — red/green indicators appear next to each test
+
+3. **See which tests fail:** press `<leader>ts` to open the summary panel
+
+4. **Read a failure message:** cursor on a failing test → `<leader>to` (output)
+   - The output tells you: got X, want Y — now you know what to look for
+
+5. **Jump to the implementation:**
+   - Cursor on the function name in the test → press `gd` → jumps to `math.go`
+
+6. **Fix the bugs** in `math.go` (there are 4), saving after each fix:
+   - Wrong operator in `Multiply`
+   - Wrong operator in `Divide`
+   - Wrong return value in `Power` for exp=0
+   - (Find the 4th yourself!)
+
+7. **Run individual tests:** cursor inside `TestMultiply` → `<leader>tt` (run nearest)
+
+8. **Watch mode:** `<leader>tw` — fix a bug, save, watch it go green instantly
+
+**✅ Done when:** all 6 test functions are green.
+
+---
+
+## Mission 15: TypeScript Debugging with DAP (10 minutes)
+
+**Goal:** Debug a TypeScript/Node.js pipeline using DAP — find two bugs without reading all the code.
+
+**Practice file:** `mission-15-ts-debug/pipeline.ts`
+
+1. **Open the file:**
+   ```bash
+   nvim ~/.config/nvim/adventure/mission-15-ts-debug/pipeline.ts
+   ```
+
+2. **Read the expected output** at the bottom of the file (comments) — memorize it
+
+3. **Set breakpoint on `[BP-1]`:** move cursor to that line → `<leader>db`
+
+4. **Start the debugger:** `<leader>dc`
+   - DAP will ask for the file to run — select `pipeline.ts`
+
+5. **Inspect variables at `[BP-1]`:**
+   - Look at the Variables panel — check `range` and `values`
+   - Something is wrong: does `range === 0` fire when it shouldn't?
+
+6. **Continue to `[BP-2]`:** press `<leader>dc` again
+   - Inspect `threshold` and the outlier list
+   - Are the right values being included?
+
+7. **Fix both bugs** (the comments in the file are clues)
+
+8. **Clear breakpoints:** `<leader>dD`
+
+**✅ Done when:** running the file produces the expected output in the comments.
+
+---
+
+## Mission 16: Vim Macros for Bulk Editing (10 minutes)
+
+**Goal:** Record one macro that transforms a `print()` call to `logger.debug()`, then replay it on 8 more lines.
+
+**Practice file:** `mission-16-macros/transform.py` — 9 print() calls to convert.
+
+**The rule: no `:%s/` allowed. Macros only.**
+
+1. **Open the file:**
+   ```bash
+   nvim ~/.config/nvim/adventure/mission-16-macros/transform.py
+   ```
+
+2. **Add the imports manually** at the top (just once — this is fine):
+   ```python
+   import logging
+   logger = logging.getLogger(__name__)
+   ```
+
+3. **Position cursor** on the first `print(f"[DEBUG] load_config: reading from {path}")` line
+
+4. **Start recording:** press `qq` (record into register `q`)
+
+5. **Do the transformation** (one possible macro sequence):
+   - `^` → go to line start
+   - `ciw` → change `print` → type `logger.debug`
+   - `f[` → jump to `[`
+   - `dt ` → delete `[DEBUG] load_config: ` (up to the space before the message)
+   - `Esc`, `j` → move to next line
+
+6. **Stop recording:** press `q`
+
+7. **Replay on next line:** press `@q`
+
+8. **Replay 7 more times:** press `7@@`
+
+9. **BONUS — visual range macro:**
+   - Select remaining lines with `V`
+   - Run `:norm @q` to apply macro to all selected lines at once
+
+**✅ Done when:** all 9 `print()` calls are converted to `logger.debug()`.
+
+---
+
 ## 🎓 Adventure Complete!
 
 **You've mastered:**
@@ -346,6 +533,11 @@ Practice right here — make real changes and commit them.
 - ✅ Go static analysis
 - ✅ Watch mode TDD
 - ✅ Markdown rendering
+- ✅ Quickfix list + nvim-bqf search workflows
+- ✅ Multi-file LSP rename and refactoring
+- ✅ Go table-driven testing with neotest
+- ✅ TypeScript DAP debugging
+- ✅ Vim macros for bulk transformations
 
 **Quick reference — the commands you'll use every day:**
 

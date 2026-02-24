@@ -2,17 +2,8 @@ return {
   -- Require nvim-nio (needed by dap-ui)
   { "nvim-neotest/nvim-nio" },
 
-  -- Core DAP support
+  -- Core DAP support (includes UI, virtual text, and mason in newer LazyVim)
   { import = "lazyvim.plugins.extras.dap.core" },
-
-  -- UI panels
-  { import = "lazyvim.plugins.extras.dap.ui" },
-
-  -- Inline variable text
-  { import = "lazyvim.plugins.extras.dap.virtual_text" },
-
-  -- Mason dap installer
-  { import = "lazyvim.plugins.extras.dap.mason" },
 
   -- Go debugger
   {

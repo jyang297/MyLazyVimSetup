@@ -13,7 +13,7 @@ return {
 
   -- Ensure gopls and other tools are installed via Mason (optional but convenient)
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
