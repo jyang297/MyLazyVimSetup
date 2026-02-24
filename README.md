@@ -676,13 +676,13 @@ Each mission builds on the previous one. Complete them in order for the best exp
 ### Python
 
 **Features:**
-- **Strict type checking** with Pyright (`typeCheckingMode: "strict"`)
-- **Static type analysis** with mypy
+- **Strict type checking** with `Pyright` (`typeCheckingMode: "strict"`)
+- **Static type analysis** with `mypy`
 - **Fast linting** with Ruff
-- **Formatting** with Black + isort (auto on save)
-- **Debugging** with debugpy
+- **Formatting** with `Black` + `isort` (auto on save)
+- **Debugging** with `debugpy`
 - **Inlay hints** showing types and parameters
-- **Testing** with pytest via neotest
+- **Testing** with `pytest` via `neotest`
 
 **Keybindings:**
 - `<leader>cr` - Organize imports (Pyright)
