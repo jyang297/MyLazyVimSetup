@@ -1,0 +1,11 @@
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+
+[tool.basedpyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+
+[tool.mypy]
+strict = true
+python_version = "3.11"

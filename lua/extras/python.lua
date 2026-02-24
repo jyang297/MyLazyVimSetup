@@ -15,7 +15,9 @@ return {
     end,
   },
 
-  -- Pyright with strict type checking
+  -- Pyright / basedpyright with strict type checking
+  -- LazyVim older versions use `pyright`, newer versions use `basedpyright`.
+  -- Both server names are listed here; only the one that is installed will activate.
   {
     "neovim/nvim-lspconfig",
     opts = {
@@ -28,7 +30,23 @@ return {
                 typeCheckingMode = "strict",
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
-                diagnosticMode = "workspace",
+                diagnosticMode = "openFilesOnly",
+                diagnosticSeverityOverrides = {
+                  reportUnusedImport = "warning",
+                  reportUnusedVariable = "warning",
+                },
+              },
+            },
+          },
+        },
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                typeCheckingMode = "strict",
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = "openFilesOnly",
                 diagnosticSeverityOverrides = {
                   reportUnusedImport = "warning",
                   reportUnusedVariable = "warning",

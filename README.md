@@ -57,600 +57,128 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
 
 ## 🎮 Getting Started Adventure
 
-**New to this setup? Take this guided tour to learn each tool step-by-step!**
+**New to this setup? Don't read docs — learn by doing.**
 
-Each mission builds on the previous one. Complete them in order for the best experience.
+The full guided tour with 11 hands-on missions and ready-to-use practice files lives here:
 
-### Mission 1: Basic Navigation & LSP (5 minutes)
+```
+~/.config/nvim/adventure/README.md
+```
 
-**Goal:** Learn to navigate code and use Language Server features.
+Open it in Neovim to start:
 
-1. **Create a test Python file:**
-   ```bash
-   mkdir -p ~/nvim-adventure
-   cd ~/nvim-adventure
-   nvim main.py
-   ```
+```bash
+nvim ~/.config/nvim/adventure/README.md
+```
 
-2. **Enter Insert mode and type this code:**
-   ```python
-   def calculate(x, y):
-       result = x + y
-       return result
+Or jump straight to a mission:
 
-   print(calculate(5, 3))
-   ```
-   Press `Esc` to exit insert mode.
+```bash
+nvim ~/.config/nvim/adventure/mission-1-lsp/main.py
+```
 
-3. **See the errors! (strict typing in action)**
-   - Notice the red squiggly lines - Pyright wants type annotations!
-   - Press `gl` (while cursor is on `def`) to see the diagnostic message
-
-4. **Fix the types:**
-   - Press `i` to enter insert mode
-   - Fix the function signature:
-   ```python
-   def calculate(x: int, y: int) -> int:
-   ```
-   - Press `Esc`, then `:w` to save
-   - Errors gone! ✅
-
-5. **Try LSP navigation:**
-   - Move cursor to the word `calculate` on the `print` line
-   - Press `gd` (go to definition) - jumps to function definition
-   - Press `K` (capital K) - see function signature in hover window
-   - Press `<C-o>` to jump back
-
-6. **See inlay hints:**
-   - Notice the gray text showing parameter names: `calculate(x: 5, y: 3)`
-   - Press `<leader>uh` to toggle hints off, then on again
-   - Pretty cool, right? 😎
-
-**✅ Mission 1 Complete!** You've mastered basic navigation and strict typing!
+Each mission file has a goal, checklist, and intentional bugs to find with the tools.
 
 ---
 
-### Mission 2: File Explorer with Oil.nvim (5 minutes)
+## Starting a New Project
 
-**Goal:** Master the most intuitive file manager ever.
+### Golden rule
 
-1. **Still in main.py, press `-`**
-   - You're now in Oil.nvim file explorer
-   - You can see `main.py` listed
+**Always `cd` into the project root and activate the environment before opening Neovim.**
+LSPs walk up parent directories to find config files — if you open from the wrong place, they find the wrong root (or none).
 
-2. **Create a new file by editing:**
-   - Press `o` to create a new line below `main.py`
-   - Type: `utils.py`
-   - Press `Esc`
-   - **Save the changes:** `:w`
-   - Oil creates the file! ✨
+```bash
+cd ~/projects/my-project
+source .venv/bin/activate   # or: conda activate env / poetry shell
+nvim .
+```
 
-3. **Rename main.py to app.py:**
-   - Move cursor to the line with `main.py`
-   - Press `cw` (change word)
-   - Type: `app.py`
-   - Press `Esc`, then `:w`
-   - File renamed! 🎉
+### New Python project — do this once
 
-4. **Create a directory:**
-   - Press `o` for new line
-   - Type: `tests/`
-   - Press `Esc`, then `:w`
-   - Directory created!
+```bash
+mkdir my-project && cd my-project
+git init
+python3 -m venv .venv && source .venv/bin/activate
 
-5. **Navigate into tests:**
-   - Move cursor to `tests/` line
-   - Press `Enter`
-   - You're inside the directory
-   - Press `-` to go back to parent
+cat > pyproject.toml << 'EOF'
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
 
-6. **Delete utils.py:**
-   - Move cursor to `utils.py` line
-   - Press `dd` (delete line)
-   - Press `:w`
-   - File deleted!
+[tool.basedpyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
 
-7. **Exit oil:**
-   - Press `Enter` on `app.py` to open it
+[tool.mypy]
+strict = true
+python_version = "3.11"
+EOF
 
-**✅ Mission 2 Complete!** You can now manage files like a pro!
+nvim .
+```
 
----
+The `pyproject.toml` serves two purposes: it's the project root marker (so the LSP anchors here) and it declares strict typing for the whole project.
 
-### Mission 3: Testing with Neotest (10 minutes)
+### Entering an existing project
 
-**Goal:** Write and run tests interactively.
+```bash
+cd existing-project
+source .venv/bin/activate   # activate BEFORE opening nvim
+nvim .
+```
 
-1. **Create a test file:**
-   - Press `-` to open oil
-   - Create new line: `test_app.py`
-   - Save with `:w`
-   - Press `Enter` to open it
+Then check what the LSP picked up:
 
-2. **Write a test:**
-   ```python
-   def test_addition() -> None:
-       assert 1 + 1 == 2
+```vim
+:LspInfo
+```
 
-   def test_multiplication() -> None:
-       assert 2 * 3 == 6
+Look at **Root dir** — if it shows a parent directory instead of your project, add a minimal marker:
 
-   def test_failing() -> None:
-       assert 1 + 1 == 3  # This will fail!
-   ```
-   Save with `:w`
+```bash
+# Minimal — just marks the root for all pyright variants
+echo '{"pythonVersion": "3.11", "typeCheckingMode": "strict"}' > pyrightconfig.json
+```
 
-3. **Run a single test:**
-   - Move cursor to the `test_addition` function
-   - Press `<leader>ts` to open test summary
-   - Press `<leader>tt` (run nearest test)
-   - See the green checkmark? Test passed! ✅
+Then `:LspRestart` inside Neovim.
 
-4. **Run all tests in file:**
-   - Press `<leader>tf` (run file)
-   - Notice `test_failing` has a red X ❌
+### Per-project strictness
 
-5. **See test output:**
-   - Move cursor to `test_failing` line
-   - Press `<leader>to` (test output)
-   - See the assertion error details
+Not every codebase uses strict mode. Override per project in `pyproject.toml`:
 
-6. **Fix the test:**
-   - Change `assert 1 + 1 == 3` to `assert 1 + 1 == 2`
-   - Save with `:w`
-   - Press `<leader>tt` to run again
-   - Green checkmark! ✅
+```toml
+[tool.pyright]
+typeCheckingMode = "basic"    # basic | standard | strict
 
-7. **Navigate with summary:**
-   - Press `<leader>ts` to toggle summary panel
-   - See all tests in a tree view
-   - Use `j`/`k` to navigate
-   - Press `Enter` on a test to jump to it
-   - Press `<leader>ts` again to close
+[tool.basedpyright]
+typeCheckingMode = "basic"
+```
 
-**💡 Pro tip:** Press `<leader>tw` to enable watch mode - tests auto-run on save!
+### Quick diagnostics inside Neovim
 
-**✅ Mission 3 Complete!** You're a testing ninja now!
+| Command | What it shows |
+|---|---|
+| `:LspInfo` | Active servers + their root dir |
+| `:checkhealth lspconfig` | Full LSP health |
+| `:lua print(vim.fn.exepath("python3"))` | Which Python Neovim sees |
+| `:Mason` | Install / verify tools |
 
----
+### TypeScript / Go projects
 
-### Mission 4: Debugging with Breakpoints (10 minutes)
+These are simpler — both LSPs detect roots automatically from `package.json` (TS) or `go.mod` (Go). Just open from the project root and they work.
 
-**Goal:** Debug code like a detective.
+```bash
+# TypeScript
+cd my-ts-project && nvim .
 
-1. **Create a buggy function in app.py:**
-   ```python
-   def process_numbers(numbers: list[int]) -> int:
-       total = 0
-       for num in numbers:
-           total += num * 2  # Double each number
-       return total
-
-   result = process_numbers([1, 2, 3, 4, 5])
-   print(f"Result: {result}")
-   ```
-
-2. **Set a breakpoint:**
-   - Move cursor to the line `total += num * 2`
-   - Press `<leader>db` (toggle breakpoint)
-   - See the red dot in the gutter? That's your breakpoint 🔴
-
-3. **Start debugging:**
-   - Press `<leader>dc` (continue/start debug)
-   - DAP UI panels open!
-   - Execution stops at your breakpoint
-
-4. **Inspect variables:**
-   - Look at the Variables panel (left side)
-   - See `num`, `total`, `numbers`?
-   - Hover your mouse over `total` in the code
-   - See the current value!
-
-5. **Step through code:**
-   - Press `<leader>dO` (step over) - goes to next line
-   - Watch `total` change in the Variables panel
-   - Press `<leader>dO` again
-   - Keep stepping to see the loop execute
-
-6. **Continue execution:**
-   - Press `<leader>dc` (continue)
-   - Program runs to completion
-   - See the output: `Result: 30`
-
-7. **Clean up:**
-   - Press `<leader>dD` (clear all breakpoints)
-
-**✅ Mission 4 Complete!** You can now debug like a pro!
-
----
-
-### Mission 5: Log Points - Debug Without Code Changes (10 minutes)
-
-**Goal:** Use log points to understand code flow without modifying source.
-
-1. **Create a complex function:**
-   ```python
-   def calculate_score(base: int, multiplier: int, bonus: int) -> int:
-       temp = base * multiplier
-       result = temp + bonus
-       return result
-
-   scores = []
-   for i in range(5):
-       score = calculate_score(i, 2, 10)
-       scores.append(score)
-
-   print(f"Scores: {scores}")
-   ```
-
-2. **Set a log point (no code changes!):**
-   - Move cursor to line `temp = base * multiplier`
-   - Press `<leader>dl` (set log point)
-   - Enter: `base={base}, multiplier={multiplier}, temp={temp}`
-   - Log point set! 📝
-
-3. **Set another log point:**
-   - Move cursor to line `result = temp + bonus`
-   - Press `<leader>dl`
-   - Enter: `Adding bonus: temp={temp} + {bonus} = {result}`
-
-4. **Start debugging:**
-   - Press `<leader>dc`
-   - In the Debug Console, you'll see log messages appear!
-   - Each iteration shows values WITHOUT stopping execution
-
-5. **Compare with regular breakpoint:**
-   - Press `<leader>db` on the `scores.append(score)` line
-   - Press `<leader>dc` to continue
-   - Now it STOPS at each iteration
-   - See the difference? Log points = no stopping! 🚀
-
-6. **View all breakpoints:**
-   - Press `<leader>dL` (list breakpoints)
-   - See your log points with their messages
-   - See your breakpoints
-
-7. **Clean up:**
-   - Press `<leader>dD` to clear all
-
-**💡 Pro tip:** Log points are PERFECT for production debugging - no code changes needed!
-
-**✅ Mission 5 Complete!** You're a debugging wizard!
-
----
-
-### Mission 6: Conditional Breakpoints (5 minutes)
-
-**Goal:** Only break when specific conditions are met.
-
-1. **Create a loop:**
-   ```python
-   def find_problem(data: list[int]) -> None:
-       for i, value in enumerate(data):
-           result = value * 2
-           print(f"Index {i}: {value} -> {result}")
-
-   find_problem(list(range(20)))
-   ```
-
-2. **Set conditional breakpoint:**
-   - Move cursor to `result = value * 2`
-   - Press `<leader>dC` (conditional breakpoint)
-   - Enter condition: `i == 15`
-   - Breakpoint only triggers when i equals 15!
-
-3. **Start debugging:**
-   - Press `<leader>dc`
-   - Notice it doesn't stop at i=0, 1, 2...
-   - Only stops when i=15! 🎯
-
-4. **Try a complex condition:**
-   - Clear breakpoint: `<leader>dD`
-   - Set new conditional: `value > 10 and value % 2 == 0`
-   - Press `<leader>dc`
-   - Only stops when value is even and greater than 10!
-
-**✅ Mission 6 Complete!** You're a conditional debugging master!
-
----
-
-### Mission 7: Git Integration with Diffview (10 minutes)
-
-**Goal:** Master Git workflows in Neovim.
-
-1. **Make some changes to app.py:**
-   - Add a new function:
-   ```python
-   def greet(name: str) -> str:
-       return f"Hello, {name}!"
-   ```
-   - Save with `:w`
-
-2. **View your changes:**
-   - Press `<leader>gd` (diffview)
-   - See side-by-side diff of your changes!
-   - Left = original, Right = your changes
-   - Navigate with `j`/`k`
-
-3. **Navigate between files:**
-   - If you have multiple changed files, press `Tab`
-   - Switches to file panel
-   - Use `j`/`k` to select different files
-   - Press `Enter` to view that file's diff
-
-4. **Close diffview:**
-   - Press `<leader>gq`
-
-5. **Make a commit:**
-   - In normal mode: `:!git add .`
-   - `:!git commit -m "Add greet function"`
-
-6. **View file history:**
-   - Press `<leader>gh` (file history)
-   - See all commits that touched app.py
-   - Navigate commits with `j`/`k`
-   - Press `Enter` on a commit to see changes
-   - Press `<leader>gq` to close
-
-7. **View full repo history:**
-   - Press `<leader>gH` (repo history)
-   - See ALL commits in project
-   - Navigate and explore
-
-8. **Hunk navigation:**
-   - Make another change to app.py
-   - Press `]c` - jump to next change (hunk)
-   - Press `[c` - jump to previous change
-   - Press `<leader>gp` - preview hunk in floating window
-   - Press `<leader>gb` - toggle git blame (see who changed each line)
-
-**✅ Mission 7 Complete!** Git is now your playground!
-
----
-
-### Mission 8: TypeScript Strict Mode (10 minutes)
-
-**Goal:** Experience strict typing in TypeScript.
-
-1. **Create a TypeScript file:**
-   - Press `-`, create `app.ts`
-   - Open it
-
-2. **Write loose code (bad):**
-   ```typescript
-   function add(a, b) {
-       return a + b;
-   }
-
-   let result = add(5, 3);
-   ```
-   - See the errors? Strict mode catches implicit `any`! 🚨
-
-3. **Fix with proper types:**
-   ```typescript
-   function add(a: number, b: number): number {
-       return a + b;
-   }
-
-   let result: number = add(5, 3);
-   ```
-   - Errors gone! ✅
-
-4. **See inlay hints:**
-   - Notice hints showing: `add(a: 5, b: 3)`
-   - Very helpful for understanding function calls!
-
-5. **Try strict null checks:**
-   ```typescript
-   let username: string | null = null;
-   console.log(username.length);  // ❌ Error!
-   ```
-   - Strict mode catches potential null reference!
-
-6. **Fix it:**
-   ```typescript
-   let username: string | null = null;
-   if (username !== null) {
-       console.log(username.length);  // ✅ OK
-   }
-   ```
-
-7. **Auto-format with Prettier:**
-   - Write some messy code:
-   ```typescript
-   const obj={name:"test",value:123,active:true};
-   ```
-   - Save with `:w`
-   - Prettier auto-formats it! ✨
-   ```typescript
-   const obj = { name: "test", value: 123, active: true };
-   ```
-
-**✅ Mission 8 Complete!** TypeScript strict mode mastered!
-
----
-
-### Mission 9: Go with Strict Analysis (10 minutes)
-
-**Goal:** Experience Go's powerful static analysis.
-
-1. **Create a Go file:**
-   - Press `-`, create `main.go`
-   - Open it
-
-2. **Write code with issues:**
-   ```go
-   package main
-
-   import "fmt"
-
-   func process(data string, unused int) {
-       var result string
-       result = data
-       fmt.Println(data)
-   }
-
-   func main() {
-       var ptr *int
-       fmt.Println(*ptr)
-       process("hello", 42)
-   }
-   ```
-
-3. **See the errors:**
-   - `unused` parameter - gopls catches it! 🚨
-   - `result` written but never used - caught!
-   - `*ptr` potential nil pointer - caught!
-
-4. **Fix the issues:**
-   ```go
-   package main
-
-   import "fmt"
-
-   func process(data string) {
-       fmt.Println(data)
-   }
-
-   func main() {
-       value := 42
-       ptr := &value
-       fmt.Println(*ptr)
-       process("hello")
-   }
-   ```
-
-5. **Auto-imports:**
-   - Remove the `import "fmt"` line
-   - Save with `:w`
-   - goimports adds it back automatically! 🎉
-
-6. **See inlay hints:**
-   - Notice parameter hints in function calls
-   - Type hints for variables
-
-**✅ Mission 9 Complete!** You're a Go strict typing champion!
-
----
-
-### Mission 10: Advanced - Watch Mode Testing (5 minutes)
-
-**Goal:** Tests auto-run as you code!
-
-1. **Open test_app.py:**
-   - Press `<leader>ff`, type `test_app`, press `Enter`
-
-2. **Enable watch mode:**
-   - Press `<leader>tw` (toggle watch)
-   - You'll see a notification: "Watch mode enabled"
-
-3. **Make a change:**
-   - Edit one of the tests
-   - Save with `:w`
-   - Tests automatically run! 🚀
-   - See results in status line
-
-4. **Break a test:**
-   - Change `assert 1 + 1 == 2` to `assert 1 + 1 == 3`
-   - Save
-   - Instantly see failure!
-
-5. **Fix it:**
-   - Change back to `== 2`
-   - Save
-   - Instantly green! ✅
-
-6. **Disable watch mode:**
-   - Press `<leader>tw` again
-
-**✅ Mission 10 Complete!** You're a TDD master!
-
----
-
-### Mission 11: Reading Markdown in Neovim (5 minutes)
-
-**Goal:** Read and write beautiful docs without leaving Neovim.
-
-1. **Open this README:**
-   ```bash
-   nvim ~/.config/nvim/README.md
-   ```
-   Markdown renders inline — headers are colored, code blocks have backgrounds, bullets have icons, tables are drawn with lines.
-
-2. **Toggle rendering off and on:**
-   - Press `<leader>um` to toggle rendering
-   - Off = raw markdown source
-   - On = rendered view
-   - Very useful when editing so you can see the raw syntax
-
-3. **Navigate headings fast:**
-   - Press `]]` - jump to next heading
-   - Press `[[` - jump to previous heading
-   - Use this to skim long documents quickly
-
-4. **Check your task lists:**
-   - Find a `- [ ]` checkbox in this README
-   - Notice it renders as an unchecked box: `󰄱`
-   - `- [x]` renders as a checked box: `󰱒`
-
-5. **Open browser preview (for sharing):**
-   - Press `<leader>mp` (Markdown Preview)
-   - Your browser opens with a live preview
-   - Edit the file — browser updates in real time!
-   - Press `<leader>mp` again to close
-
-6. **Try writing your own note:**
-   - Open a new file: `:e ~/notes.md`
-   - Write some markdown:
-     ```markdown
-     # My Notes
-
-     ## Today
-     - [x] Set up Neovim
-     - [ ] Build something cool
-
-     ## Code
-     ```python
-     def hello() -> str:
-         return "world"
-     ```
-     ```
-   - Watch it render as you type!
-
-**✅ Mission 11 Complete!** Neovim is now your documentation hub!
-
----
-
-### 🎓 Adventure Complete!
-
-**Congratulations! You've mastered:**
-- ✅ LSP navigation and strict typing
-- ✅ File management with Oil.nvim
-- ✅ Testing with neotest
-- ✅ Debugging with breakpoints
-- ✅ Log points (production debugging)
-- ✅ Conditional breakpoints
-- ✅ Git integration with diffview
-- ✅ TypeScript strict mode
-- ✅ Go static analysis
-- ✅ Watch mode testing
-- ✅ Reading & writing markdown
-
-**What's Next?**
-- Read the full documentation below for advanced features
-- Customize keybindings to your preference
-- Add AI completion when ready
-- Build something awesome! 🚀
-
-**Remember the key commands:**
-- `<leader>` = `Space`
-- `-` = Oil file explorer
-- `<leader>ff` = Find files
-- `<leader>tt` = Run test
-- `<leader>db` = Breakpoint
-- `<leader>gd` = Git diff
-- `K` = Hover docs
-- `gd` = Go to definition
+# Go
+cd my-go-project && nvim .
+```
 
 ---
 
