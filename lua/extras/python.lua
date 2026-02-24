@@ -15,18 +15,24 @@ return {
     end,
   },
 
-  -- Ruff (super fast linter)
+  -- Pyright with strict type checking
   {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        ruff_lsp = {},
+        ruff = {},
         pyright = {
           settings = {
             python = {
               analysis = {
+                typeCheckingMode = "strict",
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
+                diagnosticMode = "workspace",
+                diagnosticSeverityOverrides = {
+                  reportUnusedImport = "warning",
+                  reportUnusedVariable = "warning",
+                },
               },
             },
           },
@@ -35,11 +41,30 @@ return {
     },
   },
 
-  -- Black formatter (via conform.nvim)
+  -- mypy linting for strict static type analysis
+  {
+    "mfussenegger/nvim-lint",
+    opts = function(_, opts)
+      opts.linters_by_ft = opts.linters_by_ft or {}
+      opts.linters_by_ft.python = { "mypy" }
+    end,
+  },
+
+  -- Black formatter + isort (via conform.nvim)
   {
     "stevearc/conform.nvim",
     opts = function(_, opts)
+      opts.formatters_by_ft = opts.formatters_by_ft or {}
       opts.formatters_by_ft.python = { "black", "isort" }
+    end,
+  },
+
+  -- Ensure Mason installs mypy
+  {
+    "williamboman/mason.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, { "mypy" })
     end,
   },
 }
