@@ -11,13 +11,12 @@ return {
     end,
   },
 
-  -- Ensure gopls and other tools are installed via Mason (optional but convenient)
+  -- Mason: gopls is handled by LazyVim's go extra; add golangci-lint and delve
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
-        "gopls",
         "golangci-lint",
         "delve",
       })

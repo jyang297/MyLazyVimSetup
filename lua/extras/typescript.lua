@@ -114,15 +114,14 @@ return {
     end,
   },
 
-  -- Mason tool installations
+  -- Mason: only add prettier here — ts_ls is handled by LazyVim's typescript extra,
+  -- eslint_d is an npm binary (not a Mason package), install with: npm i -g eslint_d
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
-        "typescript-language-server",
         "prettier",
-        "eslint_d",
       })
     end,
   },
