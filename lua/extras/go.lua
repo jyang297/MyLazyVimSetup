@@ -19,6 +19,8 @@ return {
       vim.list_extend(opts.ensure_installed, {
         "golangci-lint",
         "delve",
+        "goimports",
+        "gofumpt",
       })
     end,
   },
@@ -58,12 +60,14 @@ return {
   -- Format + imports on save (uses goimports through conform)
   {
     "stevearc/conform.nvim",
-    opts = {
-      formatters_by_ft = {
-        go = { "goimports", "gofmt" },
-      },
-      format_on_save = { timeout_ms = 3000, lsp_fallback = true },
-    },
+    opts = function(_, opts)
+      opts = opts or {}
+      opts.formatters_by_ft = opts.formatters_by_ft or {}
+      -- Keep Go idiomatic: organize imports first, then run gofumpt.
+      opts.formatters_by_ft.go = { "goimports", "gofumpt", "gofmt" }
+      opts.format_on_save = opts.format_on_save or { timeout_ms = 3000, lsp_fallback = true }
+      return opts
+    end,
   },
 
   -- Lint on save (golangci-lint)
@@ -89,5 +93,23 @@ return {
         enable = true,
       },
     },
+  },
+
+  -- Go buffers: tabs-based indentation like gofmt/goimports expect.
+  {
+    "neovim/nvim-lspconfig",
+    opts = function()
+      local group = vim.api.nvim_create_augroup("UserGoIndent", { clear = true })
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        pattern = "go",
+        callback = function()
+          vim.opt_local.expandtab = false
+          vim.opt_local.tabstop = 4
+          vim.opt_local.softtabstop = 4
+          vim.opt_local.shiftwidth = 4
+        end,
+      })
+    end,
   },
 }

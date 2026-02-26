@@ -6,9 +6,24 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
 
 ## Installation
 
+### WSL2 (Recommended for your work laptop)
+
+```bash
+git clone <your-repo-url> ~/.config/nvim
+cd ~/.config/nvim
+./scripts/install-wsl2.sh
+```
+
+This script will:
+- Install all required packages via `apt` (including `wslview`, `gcc`, and `fd-find`)
+- Back up existing `~/.config/nvim` if needed
+- Link this repo to `~/.config/nvim`
+- Bootstrap plugins with headless Neovim
+
 ### Prerequisites
 
 1. **Install Neovim (0.9.0+)**
+
    ```bash
    # macOS
    brew install neovim
@@ -17,15 +32,17 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
    ```
 
 2. **Install dependencies**
+
    ```bash
-   # Required
+   # macOS required
    brew install git node python3 go fzf ripgrep fd
 
-   # Optional but recommended
+   # macOS optional
    brew install lazygit bottom
    ```
 
 3. **Clone this configuration**
+
    ```bash
    # Backup existing config if you have one
    mv ~/.config/nvim ~/.config/nvim.backup
@@ -35,6 +52,7 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
    ```
 
 4. **Launch Neovim**
+
    ```bash
    nvim
    ```
@@ -45,13 +63,44 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
    - Set up formatters and linters
 
 5. **Install tools via Mason**
+
    ```vim
    :Mason
    ```
+
    Verify these are installed:
    - Python: `pyright`, `ruff-lsp`, `mypy`, `black`, `isort`, `debugpy`
    - TypeScript: `typescript-language-server`, `prettier`, `eslint_d`
    - Go: `gopls`, `golangci-lint`, `delve`
+
+---
+
+## ⚡ Quick Cheatsheet
+
+`<leader>` = `Space` in this config.
+
+### Diagnostics + Quick Fix
+
+| Key          | Action                                             |
+| ------------ | -------------------------------------------------- |
+| `]d` / `[d`  | Next/previous diagnostic (opens message float)     |
+| `]e` / `[e`  | Next/previous error only (red-line issues)         |
+| `gl`         | Show diagnostic message for current line           |
+| `<leader>dv` | Toggle inline diagnostic text on/off               |
+| `<leader>dh` | Toggle auto-show diagnostic message on cursor hold |
+| `<leader>qf` | Quick fix (code actions)                           |
+| `<leader>ca` | Code actions (LazyVim default)                     |
+| `<leader>xx` | Open Trouble diagnostics panel                     |
+| `<leader>xX` | Open Trouble diagnostics for current buffer        |
+
+### Most-used Navigation
+
+| Key         | Action                 |
+| ----------- | ---------------------- |
+| `gd`        | Go to definition       |
+| `gr`        | Go to references       |
+| `K`         | Hover documentation    |
+| `]c` / `[c` | Next/previous git hunk |
 
 ---
 
@@ -161,12 +210,12 @@ typeCheckingMode = "basic"
 
 ### Quick diagnostics inside Neovim
 
-| Command | What it shows |
-|---|---|
-| `:LspInfo` | Active servers + their root dir |
-| `:checkhealth lspconfig` | Full LSP health |
-| `:lua print(vim.fn.exepath("python3"))` | Which Python Neovim sees |
-| `:Mason` | Install / verify tools |
+| Command                                 | What it shows                   |
+| --------------------------------------- | ------------------------------- |
+| `:LspInfo`                              | Active servers + their root dir |
+| `:checkhealth lspconfig`                | Full LSP health                 |
+| `:lua print(vim.fn.exepath("python3"))` | Which Python Neovim sees        |
+| `:Mason`                                | Install / verify tools          |
 
 ### TypeScript / Go projects
 
@@ -204,6 +253,7 @@ cd my-go-project && nvim .
 ### Python
 
 **Features:**
+
 - **Strict type checking** with `Pyright` (`typeCheckingMode: "strict"`)
 - **Static type analysis** with `mypy`
 - **Fast linting** with Ruff
@@ -213,6 +263,7 @@ cd my-go-project && nvim .
 - **Testing** with `pytest` via `neotest`
 
 **Keybindings:**
+
 - `<leader>cr` - Organize imports (Pyright)
 - `gl` - Show diagnostics in floating window
 - `K` - Hover documentation
@@ -221,6 +272,7 @@ cd my-go-project && nvim .
 - `<leader>ca` - Code actions
 
 **Type Checking:**
+
 ```python
 # Pyright strict mode will catch:
 def greet(name):  # ❌ Missing type annotation
@@ -231,6 +283,7 @@ def greet(name: str) -> str:  # ✅ Properly typed
 ```
 
 **Configuration:**
+
 - File: `lua/extras/python.lua`
 - LSP: Pyright (strict) + Ruff LSP
 - Linter: mypy
@@ -241,6 +294,7 @@ def greet(name: str) -> str:  # ✅ Properly typed
 ### TypeScript/JavaScript
 
 **Features:**
+
 - **Strict type checking** with tsserver (strictNullChecks, noImplicitAny, etc.)
 - **Comprehensive inlay hints** for parameters, return types, variables
 - **FAANG-standard formatting** with Prettier
@@ -249,6 +303,7 @@ def greet(name: str) -> str:  # ✅ Properly typed
 - **Testing** with Jest via neotest
 
 **Keybindings:**
+
 - `<leader>co` - Organize imports
 - `<leader>cR` - Rename file (updates imports)
 - `gl` - Show diagnostics
@@ -257,29 +312,34 @@ def greet(name: str) -> str:  # ✅ Properly typed
 - `gr` - Go to references
 
 **Type Checking:**
+
 ```typescript
 // Strict mode catches:
-function add(a, b) {  // ❌ Implicit any
-    return a + b;
+function add(a, b) {
+  // ❌ Implicit any
+  return a + b;
 }
 
-function add(a: number, b: number): number {  // ✅ Strict
-    return a + b;
+function add(a: number, b: number): number {
+  // ✅ Strict
+  return a + b;
 }
 
 let value: string | null = null;
-console.log(value.length);  // ❌ Caught by strictNullChecks
+console.log(value.length); // ❌ Caught by strictNullChecks
 ```
 
 **Inlay Hints:**
+
 ```typescript
 // You'll see hints like:
-function process(data: string, count: number) { }
-process("test", 42)
+function process(data: string, count: number) {}
+process("test", 42);
 // Displays: process(data: "test", count: 42)
 ```
 
 **Configuration:**
+
 - File: `lua/extras/typescript.lua`
 - LSP: tsserver with strict preferences
 - Linter: eslint_d
@@ -290,6 +350,7 @@ process("test", 42)
 ### Go
 
 **Features:**
+
 - **Strict static analysis** (nilness, unused params/writes, staticcheck)
 - **Advanced formatting** with gofumpt (stricter than gofmt)
 - **Auto-import management** with goimports
@@ -300,6 +361,7 @@ process("test", 42)
 - **Code generation** via go.nvim (tags, tests, etc.)
 
 **Keybindings:**
+
 - `<leader>cr` - Run go generate
 - `gl` - Show diagnostics
 - `K` - Hover documentation
@@ -307,6 +369,7 @@ process("test", 42)
 - `gr` - Go to references
 
 **Static Analysis:**
+
 ```go
 // gopls strict mode catches:
 func process(data string, unused int) {  // ❌ unused parameter
@@ -320,6 +383,7 @@ fmt.Println(*ptr)  // ❌ nilness: potential nil pointer dereference
 ```
 
 **Configuration:**
+
 - File: `lua/extras/go.lua`
 - LSP: gopls with strict analyses
 - Linter: golangci-lint
@@ -333,20 +397,21 @@ Integrated test running with **neotest** for all three languages.
 
 ### Keybindings (all under `<leader>t`)
 
-| Key | Action |
-|-----|--------|
-| `<leader>tt` | Run nearest test |
-| `<leader>tf` | Run all tests in current file |
-| `<leader>td` | Debug nearest test (with DAP) |
-| `<leader>ts` | Toggle test summary panel |
-| `<leader>to` | Show test output |
-| `<leader>tO` | Toggle output panel |
-| `<leader>tS` | Stop running test |
+| Key          | Action                               |
+| ------------ | ------------------------------------ |
+| `<leader>tt` | Run nearest test                     |
+| `<leader>tf` | Run all tests in current file        |
+| `<leader>td` | Debug nearest test (with DAP)        |
+| `<leader>ts` | Toggle test summary panel            |
+| `<leader>to` | Show test output                     |
+| `<leader>tO` | Toggle output panel                  |
+| `<leader>tS` | Stop running test                    |
 | `<leader>tw` | Toggle watch mode (auto-run on save) |
 
 ### Usage Examples
 
 **Python (pytest):**
+
 ```python
 def test_addition():
     assert 1 + 1 == 2
@@ -356,9 +421,10 @@ def test_addition():
 ```
 
 **TypeScript (Jest):**
+
 ```typescript
-test('should add numbers', () => {
-    expect(1 + 1).toBe(2);
+test("should add numbers", () => {
+  expect(1 + 1).toBe(2);
 });
 
 // <leader>tt runs this test
@@ -366,6 +432,7 @@ test('should add numbers', () => {
 ```
 
 **Go:**
+
 ```go
 func TestAddition(t *testing.T) {
     if 1+1 != 2 {
@@ -378,6 +445,7 @@ func TestAddition(t *testing.T) {
 ```
 
 **Test Summary Panel:**
+
 - Press `<leader>ts` to see all tests in project
 - Navigate with `j`/`k`
 - Press `Enter` to jump to test
@@ -391,30 +459,32 @@ Full DAP (Debug Adapter Protocol) support for all languages.
 
 ### Core Debugging Keybindings
 
-| Key | Action |
-|-----|--------|
-| `<leader>db` | Toggle breakpoint |
-| `<leader>dB` | Toggle breakpoint (old conditional) |
-| `<leader>dl` | **Set log point** (NEW) |
+| Key          | Action                               |
+| ------------ | ------------------------------------ |
+| `<leader>db` | Toggle breakpoint                    |
+| `<leader>dB` | Toggle breakpoint (old conditional)  |
+| `<leader>dl` | **Set log point** (NEW)              |
 | `<leader>dC` | **Set conditional breakpoint** (NEW) |
-| `<leader>dD` | **Clear all breakpoints** (NEW) |
-| `<leader>dL` | **List all breakpoints** (NEW) |
-| `<leader>dc` | Continue/Start debugging |
-| `<leader>dO` | Step over |
-| `<leader>di` | Step into |
-| `<leader>do` | Step out |
-| `<leader>dr` | Toggle REPL |
-| `<leader>du` | Toggle UI |
-| `<leader>dw` | Show widgets |
+| `<leader>dD` | **Clear all breakpoints** (NEW)      |
+| `<leader>dL` | **List all breakpoints** (NEW)       |
+| `<leader>dc` | Continue/Start debugging             |
+| `<leader>dO` | Step over                            |
+| `<leader>di` | Step into                            |
+| `<leader>do` | Step out                             |
+| `<leader>dr` | Toggle REPL                          |
+| `<leader>du` | Toggle UI                            |
+| `<leader>dw` | Show widgets                         |
 
 ### Log Points (NEW!)
 
 **What are log points?**
+
 - Print messages during debugging WITHOUT modifying source code
 - Variables in `{curly braces}` are evaluated
 - Execution continues (doesn't pause like breakpoints)
 
 **How to use:**
+
 1. Position cursor on the line
 2. Press `<leader>dl`
 3. Enter log message: `Value is {variable_name}`
@@ -422,6 +492,7 @@ Full DAP (Debug Adapter Protocol) support for all languages.
 5. No source code changes needed!
 
 **Example:**
+
 ```python
 def calculate(x, y):
     result = x + y  # Set log point here: "x={x}, y={y}, result={result}"
@@ -431,14 +502,16 @@ def calculate(x, y):
 ### Conditional Breakpoints
 
 **Only pause when condition is true:**
+
 1. Press `<leader>dC`
 2. Enter condition: `x > 10`
 3. Debugger only pauses when `x > 10` is true
 
 **Example:**
+
 ```typescript
 for (let i = 0; i < 100; i++) {
-    process(i);  // Conditional breakpoint: i === 50
+  process(i); // Conditional breakpoint: i === 50
 }
 // Only breaks when i is 50
 ```
@@ -454,6 +527,7 @@ for (let i = 0; i < 100; i++) {
 ### Debug UI Panels
 
 When debugging:
+
 - **Variables** - Shows all variables in current scope
 - **Watches** - Custom expressions to watch
 - **Call Stack** - Function call hierarchy
@@ -469,11 +543,13 @@ When debugging:
 ### Gitsigns (in-buffer git info)
 
 **Features:**
+
 - Git blame in virtual text
 - Hunk preview and navigation
 - Stage/unstage hunks
 
 **Keybindings:**
+
 | Key | Action |
 |-----|--------|
 | `]c` | Next git hunk |
@@ -489,6 +565,7 @@ When debugging:
 **Beautiful diff viewer and history browser.**
 
 **Keybindings:**
+
 | Key | Action |
 |-----|--------|
 | `<leader>gd` | Open diff view (current changes) |
@@ -499,6 +576,7 @@ When debugging:
 **Usage:**
 
 **View uncommitted changes:**
+
 ```bash
 # In Neovim, press <leader>gd
 # Shows side-by-side diff of all changes
@@ -506,6 +584,7 @@ When debugging:
 ```
 
 **View file history:**
+
 ```bash
 # Press <leader>gh to see current file's history
 # Shows all commits that changed this file
@@ -513,6 +592,7 @@ When debugging:
 ```
 
 **Merge conflict resolution:**
+
 - Diffview automatically detects conflicts
 - Shows 3-way merge view
 - Use `<leader>co` (choose ours), `<leader>ct` (choose theirs)
@@ -520,6 +600,7 @@ When debugging:
 ### Git Conflict Resolution
 
 When you have conflicts:
+
 1. Open file with conflicts
 2. Press `<leader>gd` for visual merge
 3. Use conflict markers or choose sides
@@ -534,10 +615,12 @@ When you have conflicts:
 **Edit your filesystem like a buffer - the most intuitive file manager.**
 
 **Open Oil:**
+
 - `-` - Open parent directory
 - `<leader>e` - Open oil in current directory
 
 **Inside Oil:**
+
 | Key | Action |
 |-----|--------|
 | `Enter` | Open file/directory |
@@ -552,6 +635,7 @@ When you have conflicts:
 | `gx` | Open with system default |
 
 **Editing workflow:**
+
 1. Press `-` to open oil
 2. Navigate with `j`/`k`
 3. **Edit filenames like text** - change, delete, yank
@@ -561,6 +645,7 @@ When you have conflicts:
 7. Oil executes all file operations atomically
 
 **Examples:**
+
 ```
 # Rename multiple files:
 old-name-1.ts    → new-name-1.ts
@@ -579,6 +664,7 @@ old-name-2.ts    → new-name-2.ts
 ### Neo-tree (built-in alternative)
 
 If you prefer a traditional tree:
+
 - `<leader>fe` - Toggle file explorer
 - `<leader>fE` - Toggle explorer (cwd)
 
@@ -593,6 +679,7 @@ Read and write docs beautifully without leaving Neovim.
 Markdown renders live in the buffer — no browser, no split, just pretty text.
 
 **What gets rendered:**
+
 | Element | Raw | Rendered |
 |---------|-----|----------|
 | Headings | `# Title` | Large, colored text with icon |
@@ -606,6 +693,7 @@ Markdown renders live in the buffer — no browser, no split, just pretty text.
 | Horizontal rule | `---` | Full-width `─` line |
 
 **Keybindings:**
+
 | Key | Action |
 |-----|--------|
 | `<leader>um` | Toggle rendering on/off |
@@ -614,6 +702,7 @@ Markdown renders live in the buffer — no browser, no split, just pretty text.
 | `<leader>mp` | Browser preview (live reload) |
 
 **Tips:**
+
 - Toggle off with `<leader>um` when editing to see raw syntax
 - Use `]]`/`[[` to skim long docs like this README
 - Browser preview (`<leader>mp`) is useful before pushing docs to GitHub
@@ -629,16 +718,18 @@ Markdown renders live in the buffer — no browser, no split, just pretty text.
 **See type information inline as you code.**
 
 **What you see:**
+
 ```typescript
 function process(data: string, count: number) {
-    const result = transform(data);  // Shows: const result: TransformedData
-    return result;
+  const result = transform(data); // Shows: const result: TransformedData
+  return result;
 }
 
-process("test", 42);  // Shows: process(data: "test", count: 42)
+process("test", 42); // Shows: process(data: "test", count: 42)
 ```
 
 **Keybinding:**
+
 - `<leader>uh` - Toggle inlay hints on/off
 
 **Configuration:** Enabled by default for Python, TypeScript, and Go with tasteful gray styling.
@@ -648,11 +739,13 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 **Enhanced quickfix window with preview and fuzzy search.**
 
 **When to use:**
+
 - After `:Grep` or `:grep`
 - After LSP find references (`gr`)
 - After diagnostics list
 
 **Inside quickfix:**
+
 - `<Tab>` - Preview item
 - `<C-o>` - Toggle all items
 - `<C-s>` - Open in split
@@ -662,21 +755,25 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 ### Auto-formatting
 
 **Formats on save for all languages:**
+
 - Python: Black + isort
 - TypeScript/JavaScript: Prettier
 - Go: goimports + gofumpt
 
 **Manual format:**
+
 - `<leader>cf` - Format current buffer
 
 ### Linting
 
 **Automatic linting on save and when leaving insert mode:**
+
 - Python: mypy (types) + ruff (style)
 - TypeScript: eslint_d
 - Go: golangci-lint
 
 **View diagnostics:**
+
 - `gl` - Floating diagnostic window
 - `]d` - Next diagnostic
 - `[d` - Previous diagnostic
@@ -686,17 +783,17 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 
 **Available in all languages:**
 
-| Key | Action |
-|-----|--------|
-| `K` | Hover documentation |
-| `gd` | Go to definition |
-| `gD` | Go to declaration |
-| `gr` | Find references |
-| `gi` | Go to implementation |
-| `gy` | Go to type definition |
-| `<leader>ca` | Code actions |
-| `<leader>rn` | Rename symbol |
-| `<leader>cf` | Format buffer |
+| Key          | Action                |
+| ------------ | --------------------- |
+| `K`          | Hover documentation   |
+| `gd`         | Go to definition      |
+| `gD`         | Go to declaration     |
+| `gr`         | Find references       |
+| `gi`         | Go to implementation  |
+| `gy`         | Go to type definition |
+| `<leader>ca` | Code actions          |
+| `<leader>rn` | Rename symbol         |
+| `<leader>cf` | Format buffer         |
 
 ---
 
@@ -708,92 +805,92 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 
 ### General Navigation
 
-| Key | Action |
-|-----|--------|
-| `<C-h/j/k/l>` | Navigate splits |
-| `<C-w>s` | Split horizontal |
-| `<C-w>v` | Split vertical |
-| `<leader><Tab>` | Last buffer |
-| `<leader>bd` | Delete buffer |
+| Key             | Action           |
+| --------------- | ---------------- |
+| `<C-h/j/k/l>`   | Navigate splits  |
+| `<C-w>s`        | Split horizontal |
+| `<C-w>v`        | Split vertical   |
+| `<leader><Tab>` | Last buffer      |
+| `<leader>bd`    | Delete buffer    |
 
 ### File Navigation
 
-| Key | Action |
-|-----|--------|
-| `-` | Oil file explorer (parent) |
-| `<leader>e` | Oil file explorer (cwd) |
-| `<leader>ff` | Find files |
-| `<leader>fr` | Recent files |
-| `<leader>fg` | Grep files |
-| `<leader>fb` | Find buffers |
+| Key          | Action                     |
+| ------------ | -------------------------- |
+| `-`          | Oil file explorer (parent) |
+| `<leader>e`  | Oil file explorer (cwd)    |
+| `<leader>ff` | Find files                 |
+| `<leader>fr` | Recent files               |
+| `<leader>fg` | Grep files                 |
+| `<leader>fb` | Find buffers               |
 
 ### LSP (Code Intelligence)
 
-| Key | Action |
-|-----|--------|
-| `K` | Hover docs |
-| `gd` | Go to definition |
-| `gr` | Find references |
-| `<leader>ca` | Code actions |
-| `<leader>rn` | Rename |
-| `<leader>cf` | Format |
-| `gl` | Show diagnostic |
-| `]d` / `[d` | Next/prev diagnostic |
+| Key          | Action               |
+| ------------ | -------------------- |
+| `K`          | Hover docs           |
+| `gd`         | Go to definition     |
+| `gr`         | Find references      |
+| `<leader>ca` | Code actions         |
+| `<leader>rn` | Rename               |
+| `<leader>cf` | Format               |
+| `gl`         | Show diagnostic      |
+| `]d` / `[d`  | Next/prev diagnostic |
 
 ### Testing (`<leader>t`)
 
-| Key | Action |
-|-----|--------|
+| Key          | Action           |
+| ------------ | ---------------- |
 | `<leader>tt` | Run nearest test |
-| `<leader>tf` | Run file tests |
-| `<leader>td` | Debug test |
-| `<leader>ts` | Test summary |
-| `<leader>to` | Test output |
-| `<leader>tw` | Watch mode |
+| `<leader>tf` | Run file tests   |
+| `<leader>td` | Debug test       |
+| `<leader>ts` | Test summary     |
+| `<leader>to` | Test output      |
+| `<leader>tw` | Watch mode       |
 
 ### Debugging (`<leader>d`)
 
-| Key | Action |
-|-----|--------|
-| `<leader>db` | Toggle breakpoint |
-| `<leader>dl` | Log point |
+| Key          | Action                 |
+| ------------ | ---------------------- |
+| `<leader>db` | Toggle breakpoint      |
+| `<leader>dl` | Log point              |
 | `<leader>dC` | Conditional breakpoint |
-| `<leader>dc` | Continue |
-| `<leader>dO` | Step over |
-| `<leader>di` | Step into |
-| `<leader>do` | Step out |
-| `<leader>du` | Toggle UI |
-| `<leader>dD` | Clear breakpoints |
+| `<leader>dc` | Continue               |
+| `<leader>dO` | Step over              |
+| `<leader>di` | Step into              |
+| `<leader>do` | Step out               |
+| `<leader>du` | Toggle UI              |
+| `<leader>dD` | Clear breakpoints      |
 
 ### Git (`<leader>g`)
 
-| Key | Action |
-|-----|--------|
+| Key          | Action             |
+| ------------ | ------------------ |
 | `<leader>gd` | Diffview (changes) |
-| `<leader>gh` | File history |
-| `<leader>gH` | Repo history |
-| `<leader>gq` | Close diffview |
-| `<leader>gb` | Toggle blame |
-| `<leader>gp` | Preview hunk |
-| `]c` / `[c` | Next/prev hunk |
+| `<leader>gh` | File history       |
+| `<leader>gH` | Repo history       |
+| `<leader>gq` | Close diffview     |
+| `<leader>gb` | Toggle blame       |
+| `<leader>gp` | Preview hunk       |
+| `]c` / `[c`  | Next/prev hunk     |
 
 ### UI Toggles (`<leader>u`)
 
-| Key | Action |
-|-----|--------|
-| `<leader>uh` | Toggle inlay hints |
+| Key          | Action              |
+| ------------ | ------------------- |
+| `<leader>uh` | Toggle inlay hints  |
 | `<leader>ul` | Toggle line numbers |
-| `<leader>uw` | Toggle wrap |
-| `<leader>us` | Toggle spell |
+| `<leader>uw` | Toggle wrap         |
+| `<leader>us` | Toggle spell        |
 
 ### Diagnostics (`<leader>x`)
 
-| Key | Action |
-|-----|--------|
+| Key          | Action              |
+| ------------ | ------------------- |
 | `<leader>xx` | Trouble diagnostics |
-| `<leader>xX` | Buffer diagnostics |
-| `<leader>xs` | Symbols (outline) |
-| `<leader>xq` | Quickfix list |
+| `<leader>xX` | Buffer diagnostics  |
+| `<leader>xs` | Symbols (outline)   |
+| `<leader>xq` | Quickfix list       |
 
 ---
 
@@ -802,12 +899,14 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 ### For Python Developers
 
 1. **Strict typing from the start:**
+
    ```python
    # Pyright strict mode requires types everywhere
    # Good practice for production code
    ```
 
 2. **Use mypy for CI/CD:**
+
    ```bash
    # Same config as your editor
    mypy --strict your_module.py
@@ -950,6 +1049,7 @@ process("test", 42);  // Shows: process(data: "test", count: 42)
 When you're ready to add AI completion (GitHub Copilot, Supermaven, etc.):
 
 1. **For GitHub Copilot:**
+
    ```lua
    -- Add to lua/plugins/ai-completion.lua
    return {
@@ -965,6 +1065,7 @@ When you're ready to add AI completion (GitHub Copilot, Supermaven, etc.):
    ```
 
 2. **For Supermaven:**
+
    ```lua
    return {
      {
@@ -981,8 +1082,8 @@ Just create the file, restart Neovim, and it will work with your existing setup.
 
 ## Resources
 
-- **LazyVim Docs:** https://lazyvim.github.io
-- **Neovim Docs:** https://neovim.io/doc
+- **LazyVim Docs:** <https://lazyvim.github.io>
+- **Neovim Docs:** <https://neovim.io/doc>
 - **Report Issues:** Your repo issues page
 
 ---
