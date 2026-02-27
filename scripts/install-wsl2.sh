@@ -63,17 +63,34 @@ if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
   ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
 fi
 
-if [[ -e "$TARGET_DIR" && ! -L "$TARGET_DIR" ]]; then
-  echo "[4/5] Backing up existing config to: $BACKUP_DIR"
-  mv "$TARGET_DIR" "$BACKUP_DIR"
-fi
-
-if [[ -L "$TARGET_DIR" ]]; then
-  rm "$TARGET_DIR"
-fi
-
+echo "[4/5] Wiring config directory..."
 mkdir -p "$CONFIG_HOME"
-ln -s "$REPO_DIR" "$TARGET_DIR"
+
+# If script is run from ~/.config/nvim itself, do not move or relink it.
+if [[ "$REPO_DIR" == "$TARGET_DIR" ]]; then
+  echo "Using in-place repo at $TARGET_DIR"
+else
+  if [[ -e "$TARGET_DIR" && ! -L "$TARGET_DIR" ]]; then
+    echo "Backing up existing config to: $BACKUP_DIR"
+    mv "$TARGET_DIR" "$BACKUP_DIR"
+  fi
+
+  if [[ -L "$TARGET_DIR" ]]; then
+    CURRENT_LINK="$(readlink "$TARGET_DIR" || true)"
+    if [[ "$CURRENT_LINK" != "$REPO_DIR" ]]; then
+      rm "$TARGET_DIR"
+      ln -s "$REPO_DIR" "$TARGET_DIR"
+    fi
+  elif [[ ! -e "$TARGET_DIR" ]]; then
+    ln -s "$REPO_DIR" "$TARGET_DIR"
+  fi
+fi
+
+if [[ -L "$TARGET_DIR" && ! -e "$TARGET_DIR" ]]; then
+  echo "Error: $TARGET_DIR is a broken symlink."
+  echo "Please remove it and rerun installer."
+  exit 1
+fi
 
 echo "[5/5] Bootstrapping plugins (first run may take a while)..."
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}" \
