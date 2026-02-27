@@ -69,14 +69,22 @@ return {
   {
     "mfussenegger/nvim-dap",
     optional = true,
-    dependencies = {
-      {
-        "microsoft/vscode-js-debug",
-        build = "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out",
-      },
-    },
     opts = function()
       local dap = require("dap")
+      local function resolve_js_debug_server()
+        local mason_path = vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
+        if vim.fn.filereadable(mason_path) == 1 then
+          return mason_path
+        end
+
+        -- Backward compatibility if repo-based install already exists.
+        local lazy_path = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug/out/src/vsDebugServerBundle.js"
+        if vim.fn.filereadable(lazy_path) == 1 then
+          return lazy_path
+        end
+
+        return mason_path
+      end
 
       -- Configure adapter
       dap.adapters["pwa-node"] = {
@@ -86,7 +94,7 @@ return {
         executable = {
           command = "node",
           args = {
-            vim.fn.stdpath("data") .. "/lazy/vscode-js-debug/out/src/vsDebugServerBundle.js",
+            resolve_js_debug_server(),
             "${port}",
           },
         },
@@ -122,6 +130,7 @@ return {
       opts.ensure_installed = opts.ensure_installed or {}
       vim.list_extend(opts.ensure_installed, {
         "prettier",
+        "js-debug-adapter",
       })
     end,
   },
