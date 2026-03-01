@@ -75,4 +75,16 @@ return {
       { "<leader>mp", "<cmd>MarkdownPreviewToggle<cr>", ft = "markdown", desc = "Markdown Preview (Browser)" },
     },
   },
+
+  -- Force markdownlint-cli2 to use local markdownlint config.
+  {
+    "mfussenegger/nvim-lint",
+    optional = true,
+    opts = function(_, opts)
+      opts.linters = opts.linters or {}
+      opts.linters["markdownlint-cli2"] = vim.tbl_deep_extend("force", opts.linters["markdownlint-cli2"] or {}, {
+        args = { "--config", vim.fn.expand("~/.config/nvim/.markdownlint.json"), "-" },
+      })
+    end,
+  },
 }

@@ -33,7 +33,7 @@ def test_subtract() -> None:
 
 # ❌ BROKEN: wrong expected value — fix it
 def test_multiply() -> None:
-    assert multiply(3, 4) == 999   # what should this be?
+    assert multiply(3, 4) == 12  # what should this be?
 
 
 # ❌ BROKEN: divide(10, 2) does NOT equal 6 — fix the expected value
@@ -44,6 +44,7 @@ def test_divide() -> None:
 # ✅ Passes
 def test_divide_by_zero_raises() -> None:
     import pytest
+
     with pytest.raises(ValueError, match="Cannot divide by zero"):
         divide(5, 0)
 
@@ -61,8 +62,9 @@ def test_factorial_zero() -> None:
 # ❌ BROKEN: should raise ValueError, but we're passing a valid input
 def test_factorial_negative_raises() -> None:
     import pytest
+
     with pytest.raises(ValueError):
-        factorial(5)   # 5 is NOT negative — change the argument
+        factorial(5)  # 5 is NOT negative — change the argument
 
 
 # ── Bonus: add your own tests below ──────────────────────────
