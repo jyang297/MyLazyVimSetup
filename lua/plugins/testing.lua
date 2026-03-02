@@ -1,3 +1,5 @@
+local env = require("config.env")
+
 return {
   {
     "nvim-neotest/neotest",
@@ -28,7 +30,8 @@ return {
             dap = { justMyCode = false },
             runner = "pytest",
             python = function()
-              return vim.fn.exepath("python3")
+              local python = env.python_executable()
+              return python ~= "" and python or "python"
             end,
           }),
           require("neotest-jest")({

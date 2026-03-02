@@ -6,6 +6,73 @@ A professional Neovim setup optimized for AI engineering work with Python, TypeS
 
 ## Installation
 
+### Windows Git Bash (No WSL, easiest flow)
+
+```bash
+git clone <your-repo-url> ~/nvim-config
+cd ~/nvim-config
+```
+
+Then run one command:
+
+```bash
+./scripts/install-git-bash.sh
+```
+
+Optional:
+
+```bash
+# Detect only (no changes)
+./scripts/install-git-bash.sh --check-only
+
+# Print restricted-environment fallbacks only
+./scripts/install-git-bash.sh --print-fallbacks
+```
+
+This installer will:
+- Verify Git Bash + required toolchain (`nvim`, `node`, `python`, `go`, `rg`, `fd`, `fzf`)
+- Optionally auto-install missing dependencies via `winget`
+- Link this repo to `%LOCALAPPDATA%\nvim` (with copy fallback if junction is blocked)
+- Bootstrap plugins via headless Neovim
+
+### Windows corporate restrictions quick fallback
+
+If your company machine blocks package managers, junctions, or GitHub access:
+
+1. **Package manager blocked (`winget`)**
+   - Use alternatives if available: `choco` / `scoop`
+   - Or ask IT to preinstall: Neovim, Node.js LTS, Python 3, Go, ripgrep, fd, fzf
+
+2. **Junction blocked (`mklink /J`)**
+   - Installer auto-falls back to copy mode
+   - Sync updates manually:
+
+   ```bash
+   rsync -a --delete --exclude '.git/' ~/nvim-config/ "$(cygpath -u "$LOCALAPPDATA")/nvim/"
+   ```
+
+   - If `rsync` is unavailable:
+
+   ```bash
+   cmd.exe /c robocopy "%USERPROFILE%\\nvim-config" "%LOCALAPPDATA%\\nvim" /MIR /XD .git
+   ```
+
+3. **GitHub/proxy restricted (plugin bootstrap fails)**
+   - Configure proxy:
+
+   ```bash
+   git config --global http.proxy http://proxy.company.com:8080
+   git config --global https.proxy http://proxy.company.com:8080
+   export HTTP_PROXY=http://proxy.company.com:8080
+   export HTTPS_PROXY=http://proxy.company.com:8080
+   ```
+
+   - Retry:
+
+   ```bash
+   nvim --headless "+Lazy! sync" +qa
+   ```
+
 ### WSL2 (Recommended for your work laptop)
 
 ```bash
@@ -22,7 +89,7 @@ This script will:
 
 ### Prerequisites
 
-1. **Install Neovim (0.9.0+)**
+1. **Install Neovim (0.11.2+)**
 
    ```bash
    # macOS

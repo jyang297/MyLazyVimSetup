@@ -1,8 +1,10 @@
 -- Options are automatically loaded before lazy.nvim startup
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 
-local is_wsl = vim.fn.has("wsl") == 1
-local is_mac = vim.fn.has("mac") == 1
+local env = require("config.env")
+local is_wsl = env.is_wsl
+local is_mac = env.is_mac
+local is_windows = env.is_windows
 
 -- ── Clipboard ────────────────────────────────────────────────────────────────
 if is_wsl then
@@ -30,14 +32,18 @@ elseif is_wsl then
   vim.o.shell = "/bin/bash"
 end
 
--- ── WSL2: open URLs / files with Windows default apps ────────────────────────
+-- ── Open URLs / files with system default apps ───────────────────────────────
 if is_wsl then
   -- Used by gx (open URL under cursor) and markdown-preview browser launch
   vim.g.netrw_browsex_viewer = "wslview"
+elseif is_windows then
+  vim.g.netrw_browsex_viewer = "explorer.exe"
 end
 
--- ── Python: prefer the WSL / local python3, not a Windows one ────────────────
-if is_wsl then
-  -- Explicitly point to the Linux python3 so DAP uses the right one
-  vim.g.python3_host_prog = vim.fn.exepath("python3") ~= "" and vim.fn.exepath("python3") or "/usr/bin/python3"
+-- ── Python host: keep Neovim on the local platform interpreter ───────────────
+if is_wsl or is_windows then
+  local python_host = env.python_executable()
+  if python_host ~= "" then
+    vim.g.python3_host_prog = python_host
+  end
 end

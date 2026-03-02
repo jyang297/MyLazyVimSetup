@@ -1,3 +1,5 @@
+local env = require("config.env")
+
 return {
   -- Python LSP, formatting, linting
   { import = "lazyvim.plugins.extras.lang.python" },
@@ -8,10 +10,12 @@ return {
     ft = "python",
     dependencies = { "mfussenegger/nvim-dap" },
     config = function()
-      -- Path to your python venv or system python
-      -- 自动检测系统 python
-      local path = vim.fn.exepath("python3")
-      require("dap-python").setup(path)
+      local python = env.python_executable()
+      if python == "" then
+        vim.notify("python/python3 not found in PATH. nvim-dap-python may not work.", vim.log.levels.WARN)
+        python = "python"
+      end
+      require("dap-python").setup(python)
     end,
   },
 
