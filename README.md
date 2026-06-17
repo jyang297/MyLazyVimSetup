@@ -82,7 +82,9 @@ cd ~/.config/nvim
 ```
 
 This script will:
-- Install all required packages via `apt` (including `wslview`, `gcc`, and `fd-find`)
+- Install required system packages via `apt` (including `wslview`, `gcc`, and `fd-find`)
+- Install the official Go toolchain to `~/.local/go` instead of Ubuntu's older `golang-go` package
+- Install a glibc-compatible `tree-sitter-cli` to `~/.local` for Tree-sitter parser builds
 - Back up existing `~/.config/nvim` if needed
 - Link this repo to `~/.config/nvim`
 - Bootstrap plugins with headless Neovim
@@ -128,6 +130,9 @@ This script will:
    - Install all plugins
    - Download language servers via Mason
    - Set up formatters and linters
+
+   On Ubuntu/WSL-style systems, prefer the repo installer so Go comes from the official
+   go.dev tarball rather than the old distro package.
 
 5. **Install tools via Mason**
 

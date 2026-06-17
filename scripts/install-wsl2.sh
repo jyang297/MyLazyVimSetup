@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 MIN_NVIM_VERSION="0.11.2"
+GO_VERSION="1.26.4"
+TREE_SITTER_CLI_VERSION="0.22.6"
 FORCE_UPDATE_NVIM=0
 
 if [[ "${EUID}" -eq 0 ]]; then
@@ -51,7 +53,6 @@ APT_PACKAGES=(
   python3
   python3-pip
   python3-venv
-  golang-go
   fzf
   ripgrep
   fd-find
@@ -61,6 +62,56 @@ APT_PACKAGES=(
   unzip
   xclip
 )
+
+go_sha256() {
+  local arch="$1"
+  case "$arch" in
+    x86_64) echo "1153d3d50e0ac764b447adfe05c2bcf08e889d42a02e0fe0259bd47f6733ad7f" ;;
+    aarch64|arm64) echo "ef758ae7c6cf9267c9c0ef080b8965f453d89ab2d25d9eb22de4405925238768" ;;
+    *) return 1 ;;
+  esac
+}
+
+install_go_from_release() {
+  local arch go_arch pkg_url tmp_dir expected actual profile_line
+
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64) go_arch="amd64" ;;
+    aarch64|arm64) go_arch="arm64" ;;
+    *)
+      echo "Unsupported architecture for Go release install: $arch"
+      return 1
+      ;;
+  esac
+
+  expected="$(go_sha256 "$arch")"
+  pkg_url="https://go.dev/dl/go${GO_VERSION}.linux-${go_arch}.tar.gz"
+  tmp_dir="$(mktemp -d)"
+
+  echo "Downloading Go ${GO_VERSION} (${go_arch})..."
+  curl -fL "$pkg_url" -o "${tmp_dir}/go.tar.gz"
+  actual="$(sha256sum "${tmp_dir}/go.tar.gz" | awk '{print $1}')"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "Go archive checksum mismatch."
+    echo "Expected: $expected"
+    echo "Actual:   $actual"
+    return 1
+  fi
+
+  rm -rf "$HOME/.local/go"
+  mkdir -p "$HOME/.local"
+  tar -C "$HOME/.local" -xzf "${tmp_dir}/go.tar.gz"
+
+  profile_line='export PATH="$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/share/nvim/mason/bin:$PATH"'
+  if ! grep -Fq "$profile_line" "$HOME/.bashrc" 2>/dev/null; then
+    {
+      echo ""
+      echo "# Go toolchain installed from go.dev."
+      echo "$profile_line"
+    } >> "$HOME/.bashrc"
+  fi
+}
 
 install_nvim_from_release() {
   local arch tar_name tmp_dir pkg_url extracted
@@ -153,15 +204,20 @@ echo "[2/5] Installing optional tools..."
 # Optional tools used in this config; skip silently if unavailable on distro mirror
 sudo apt-get install -y wslu lazygit bottom || true
 
+echo "[3/5] Installing Go and tree-sitter CLI..."
+install_go_from_release
+export PATH="$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/share/nvim/mason/bin:$HOME/.local/node_modules/.bin:$HOME/.local/bin:$PATH"
+npm install --prefix "$HOME/.local" "tree-sitter-cli@${TREE_SITTER_CLI_VERSION}"
+
 if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
-  echo "[3/5] Creating local fd shim for fd-find..."
+  echo "[4/5] Creating local fd shim for fd-find..."
   mkdir -p "$HOME/.local/bin"
   ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
 fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
-echo "[4/5] Wiring config directory..."
+echo "[5/6] Wiring config directory..."
 mkdir -p "$CONFIG_HOME"
 
 # If script is run from ~/.config/nvim itself, do not move or relink it.
@@ -190,7 +246,7 @@ if [[ -L "$TARGET_DIR" && ! -e "$TARGET_DIR" ]]; then
   exit 1
 fi
 
-echo "[5/5] Bootstrapping plugins (first run may take a while)..."
+echo "[6/6] Bootstrapping plugins (first run may take a while)..."
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}" \
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}" \
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}" \
@@ -201,8 +257,8 @@ cat <<MSG
 Done.
 
 Next steps:
-1) Ensure ~/.local/bin is in PATH (needed for fd shim on Ubuntu):
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+1) Ensure local tool directories are in PATH:
+   echo 'export PATH="$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/share/nvim/mason/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
    source ~/.bashrc
 
 2) Open Neovim and install Mason tools:

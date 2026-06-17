@@ -6,6 +6,20 @@ local is_wsl = env.is_wsl
 local is_mac = env.is_mac
 local is_windows = env.is_windows
 
+-- Prefer user-installed CLI tools over Mason binaries when needed. This keeps
+-- tree-sitter-cli compatible with older glibc systems such as Ubuntu 22.04.
+local path_entries = {
+  vim.fn.expand("~/.local/go/bin"),
+  vim.fn.expand("~/go/bin"),
+  vim.fn.expand("~/.local/share/nvim/mason/bin"),
+  vim.fn.expand("~/.local/node_modules/.bin"),
+}
+for _, path in ipairs(path_entries) do
+  if vim.fn.isdirectory(path) == 1 and not vim.env.PATH:find(path, 1, true) then
+    vim.env.PATH = path .. ":" .. vim.env.PATH
+  end
+end
+
 -- ── Clipboard ────────────────────────────────────────────────────────────────
 if is_wsl then
   -- WSL2: bridge to Windows clipboard via clip.exe / PowerShell
